@@ -1,0 +1,560 @@
+@import "tailwindcss";
+
+/* `dark:` follows the app's own theme switch (html[data-theme="dark"]), not only the OS setting. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ------------------------------------------------------------------
+   Design tokens — "Shop" style reference
+   White canvas, one violet accent, pillow-soft radii, tight tracking.
+------------------------------------------------------------------- */
+@theme static {
+  --color-canvas: #f2f4f5;
+  --color-surface: #ffffff;
+  --color-ink: #000000;
+  --color-hairline: #ebebeb;
+  --color-muted: #787574;
+  --color-stone: #cccccc;
+  --color-fog: #acb0aa;
+  --color-violet: #5433eb;
+  --color-violet-wash: #c0b5f3;
+  --color-slate-ink: #332f2d;
+  /* Text/icons that sit on an `ink` surface. Flips with the theme so `bg-ink text-on-ink` always reads. */
+  --color-on-ink: #ffffff;
+  --color-footer: #000000;
+  --color-on-footer: #ffffff;
+
+  /* UI text: Instrument Sans, a clean grotesque with a slightly condensed width that keeps long
+     Indonesian labels compact. Titles: Young Serif, a heavy serif that reads like a film title card.
+     System fonts follow so CJK, Cyrillic and other scripts in TMDB titles never fall back to tofu. */
+  --font-sans: "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", "Hiragino Sans", "PingFang SC",
+    "Microsoft YaHei", "Malgun Gothic", sans-serif;
+  --font-display: "Young Serif", "Iowan Old Style", "Palatino Linotype", Georgia, ui-serif,
+    "Noto Serif", "Hiragino Mincho ProN", "Songti SC", "Malgun Gothic", serif;
+
+  --radius-card: 28px;
+  --radius-inner: 20px;
+
+  --shadow-soft: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-pill: 0 2px 8px 0 rgb(0 0 0 / 0.06);
+  --shadow-float: 0 4px 24px 0 rgb(0 0 0 / 0.12);
+  --shadow-violet: 0 4px 24px 0 rgb(69 36 219 / 0.34);
+  --shadow-violet-lg: 0 8px 32px 0 rgb(69 36 219 / 0.5);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Even, symmetric easing for theme changes. Expo-out is too front-loaded: it looks finished in ~150ms. */
+  --ease-theme: cubic-bezier(0.45, 0, 0.25, 1);
+}
+
+/* ------------------------------------------------------------------
+   Dark theme. Same tokens, new values. `ink` becomes the light color, so anything
+   drawn as `bg-ink` (buttons, active pills) inverts, and `on-ink` flips with it.
+------------------------------------------------------------------- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-canvas: #0e0f11;
+  --color-surface: #17181b;
+  --color-ink: #f5f5f4;
+  --color-on-ink: #0e0f11;
+  --color-hairline: #2a2b2f;
+  --color-muted: #9a9794;
+  --color-stone: #4a4a4d;
+  --color-fog: #a8aca6;
+  --color-violet: #7c5cff;
+  --color-violet-wash: #3b2f80;
+  --color-slate-ink: #24211f;
+  --color-footer: #17181b;
+  --color-on-footer: #f5f5f4;
+
+  --shadow-soft: 0 4px 10px -2px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-pill: 0 2px 8px 0 rgb(0 0 0 / 0.35);
+  --shadow-float: 0 6px 28px 0 rgb(0 0 0 / 0.55);
+  --shadow-violet: 0 4px 24px 0 rgb(124 92 255 / 0.28);
+  --shadow-violet-lg: 0 8px 32px 0 rgb(124 92 255 / 0.42);
+}
+:root:not([data-theme]) {
+  color-scheme: light;
+}
+
+/* Type scale. Everything is in rem, so it follows the reader's own font-size setting; the fluid sizes
+   use clamp() with a rem term for the same reason, which keeps them zoomable. Titles are Young Serif
+   (one weight, so hierarchy comes from size); UI text is Instrument Sans. Never use bold on the serif:
+   the browser would fake it. */
+@utility t-headline {
+  font-family: var(--font-display);
+  font-size: clamp(1.875rem, calc(1.2rem + 2.8vw), 2.875rem);
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+  font-weight: 400;
+  font-synthesis-weight: none;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+@utility t-display {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, calc(1.1rem + 0.5vw), 1.5rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  font-weight: 400;
+  font-synthesis-weight: none;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+@utility t-lead {
+  font-size: clamp(1rem, calc(0.95rem + 0.2vw), 1.125rem);
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  font-weight: 400;
+}
+@utility t-body {
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  letter-spacing: -0.006em;
+  font-weight: 400;
+}
+@utility t-strong {
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+}
+@utility t-meta {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+@utility t-caption {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  letter-spacing: 0.002em;
+  font-weight: 500;
+}
+@utility t-wordmark {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, calc(2.2rem + 10.5vw), 8rem);
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  font-weight: 400;
+  font-synthesis-weight: none;
+}
+
+@layer base {
+  html {
+    background: var(--color-canvas);
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 5.5rem);
+  }
+  /* Large screens: the whole rem-based UI grows, instead of floating in a fixed 1200px column. */
+  @media (min-width: 1920px) {
+    html {
+      font-size: 112.5%;
+    }
+  }
+  @media (min-width: 2560px) {
+    html {
+      font-size: 137.5%;
+    }
+  }
+  body {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.45;
+    letter-spacing: -0.01em;
+    /* Landscape phones with a notch: keep content out of the cutout. */
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    color: var(--color-ink);
+    background: var(--color-canvas);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+  input:focus-visible {
+    outline: none;
+  }
+  ::selection {
+    background: var(--color-violet-wash);
+  }
+  /* Bright posters glare on a dark canvas; pull them down slightly. */
+  :root[data-theme="dark"] img {
+    filter: brightness(0.92);
+  }
+  #content {
+    transition:
+      opacity 0.28s ease,
+      filter 0.28s ease,
+      transform 0.45s var(--ease-out-expo);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Touch screens: grow the tappable area of small icon buttons to 44px without changing how they look.
+   The element must be positioned (`relative` or `absolute`). */
+@media (pointer: coarse) {
+  .tap-target::after {
+    content: "";
+    position: absolute;
+    inset-block: min(0px, calc((100% - 44px) / 2));
+    inset-inline: min(0px, calc((100% - 44px) / 2));
+  }
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ------------------------------------------------------------------
+   Motion
+   Entrances are CSS-only above the fold and IntersectionObserver-driven
+   below it. Everything is switched off by prefers-reduced-motion.
+------------------------------------------------------------------- */
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+@keyframes drop-in {
+  from { opacity: 0; transform: translateY(-64px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+@keyframes shimmer {
+  to { background-position: -200% 0; }
+}
+@keyframes settle {
+  from { transform: scale(1.14); }
+  to { transform: scale(1); }
+}
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes kernel {
+  0% { transform: translateY(0) rotate(0); }
+  35% { transform: translateY(-0.2em) rotate(-7deg) scale(1.08); }
+  70% { transform: translateY(0.03em) rotate(3deg); }
+  100% { transform: none; }
+}
+@keyframes leave {
+  to { opacity: 0; transform: translateX(24px) scale(0.96); }
+}
+
+@layer components {
+  /* Route change: the page eases in. `backwards` so no transform lingers afterwards. */
+  .page-enter {
+    animation: rise-in 0.55s var(--ease-out-expo) backwards;
+  }
+  .anim-rise {
+    animation: rise-in 0.8s var(--ease-out-expo) backwards;
+    animation-delay: var(--d, 0ms);
+  }
+  .anim-item {
+    animation: rise-in 0.4s var(--ease-out-expo) backwards;
+    animation-delay: var(--d, 0ms);
+  }
+  .anim-fade {
+    animation: fade-in 0.5s ease-out backwards;
+    animation-delay: var(--d, 0ms);
+  }
+  .anim-pop {
+    animation: pop 0.45s var(--ease-spring);
+  }
+  .anim-menu {
+    transform-origin: top center;
+    animation: menu-in 0.25s var(--ease-out-expo) both;
+  }
+  .anim-settle {
+    animation: settle 1.8s var(--ease-out-expo) both;
+  }
+  .anim-leave {
+    animation: leave 0.28s ease-in forwards;
+  }
+
+  /* Scroll reveal. Only hidden when JS is running (html.js), so nothing is lost without it. */
+  .js .reveal {
+    opacity: 0;
+    transform: translateY(var(--reveal-y, 18px));
+    transition:
+      opacity 0.75s var(--ease-out-expo),
+      transform 0.75s var(--ease-out-expo);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .js .reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Children rise one after another (pills, badges, filters). */
+  .stagger > * {
+    animation: rise-in 0.6s var(--ease-out-expo) backwards;
+    animation-delay: calc(var(--stagger-base, 0ms) + 55ms * (var(--n, 1) - 1));
+  }
+  .stagger > :nth-child(1) { --n: 1; }
+  .stagger > :nth-child(2) { --n: 2; }
+  .stagger > :nth-child(3) { --n: 3; }
+  .stagger > :nth-child(4) { --n: 4; }
+  .stagger > :nth-child(5) { --n: 5; }
+  .stagger > :nth-child(6) { --n: 6; }
+  .stagger > :nth-child(7) { --n: 7; }
+  .stagger > :nth-child(8) { --n: 8; }
+  .stagger > :nth-child(9) { --n: 9; }
+  .stagger > :nth-child(10) { --n: 10; }
+  .stagger > :nth-child(n + 11) { --n: 11; }
+
+  /* Hero constellation */
+  .hero-drop {
+    animation: drop-in 1s var(--ease-spring) backwards;
+    animation-delay: calc(var(--i, 0) * 90ms + 120ms);
+  }
+  .hero-float {
+    animation: float var(--float-dur, 6s) ease-in-out infinite;
+    animation-delay: var(--float-delay, 0s);
+  }
+  .parallax-layer {
+    transform: translate3d(
+      calc(var(--mx, 0) * var(--depth, 0) * 1px),
+      calc(var(--my, 0) * var(--depth, 0) * 1px),
+      0
+    );
+    transition: transform 0.45s var(--ease-out-expo);
+    will-change: transform;
+  }
+
+  /* Wordmark: each letter pops like a kernel. */
+  .kernel-letter {
+    display: inline-block;
+    cursor: default;
+  }
+  @media (hover: hover) {
+    .kernel-letter:hover {
+      animation: kernel 0.6s var(--ease-spring);
+    }
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      100deg,
+      var(--color-surface) 30%,
+      var(--color-canvas) 50%,
+      var(--color-surface) 70%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s linear infinite;
+  }
+  .shimmer-canvas {
+    background: linear-gradient(
+      100deg,
+      var(--color-canvas) 30%,
+      var(--color-surface) 50%,
+      var(--color-canvas) 70%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s linear infinite;
+  }
+}
+
+/* Every button gives a little physical feedback. */
+@layer base {
+  button:not(:disabled) {
+    transition:
+      transform 0.15s var(--ease-out-expo),
+      background-color 0.2s,
+      color 0.2s,
+      border-color 0.2s,
+      box-shadow 0.25s;
+  }
+  button:not(:disabled):active {
+    transform: scale(0.96);
+  }
+}
+
+/* ------------------------------------------------------------------
+   Theme switch
+   The color tokens are registered as typed <color> properties, so the browser can interpolate
+   them. On a switch, `.theme-transition` is on <html> for ~1s and only the tokens on <html> are
+   animated; every element that reads them (bg-canvas, text-ink, ...) fades along for free.
+   That is far cheaper than putting `transition` on every element (`*`), which stalled the
+   home page. The class is removed afterwards so hover and entrance animations are untouched.
+------------------------------------------------------------------- */
+@property --color-canvas { syntax: "<color>"; inherits: true; initial-value: #f2f4f5; }
+@property --color-surface { syntax: "<color>"; inherits: true; initial-value: #ffffff; }
+@property --color-ink { syntax: "<color>"; inherits: true; initial-value: #000000; }
+@property --color-on-ink { syntax: "<color>"; inherits: true; initial-value: #ffffff; }
+@property --color-hairline { syntax: "<color>"; inherits: true; initial-value: #ebebeb; }
+@property --color-muted { syntax: "<color>"; inherits: true; initial-value: #787574; }
+@property --color-stone { syntax: "<color>"; inherits: true; initial-value: #cccccc; }
+@property --color-fog { syntax: "<color>"; inherits: true; initial-value: #acb0aa; }
+@property --color-violet { syntax: "<color>"; inherits: true; initial-value: #5433eb; }
+@property --color-violet-wash { syntax: "<color>"; inherits: true; initial-value: #c0b5f3; }
+@property --color-slate-ink { syntax: "<color>"; inherits: true; initial-value: #332f2d; }
+@property --color-footer { syntax: "<color>"; inherits: true; initial-value: #000000; }
+@property --color-on-footer { syntax: "<color>"; inherits: true; initial-value: #ffffff; }
+
+html.theme-transition {
+  transition:
+    --color-canvas 0.9s var(--ease-theme),
+    --color-surface 0.9s var(--ease-theme),
+    --color-ink 0.9s var(--ease-theme),
+    --color-on-ink 0.9s var(--ease-theme),
+    --color-hairline 0.9s var(--ease-theme),
+    --color-muted 0.9s var(--ease-theme),
+    --color-stone 0.9s var(--ease-theme),
+    --color-fog 0.9s var(--ease-theme),
+    --color-violet 0.9s var(--ease-theme),
+    --color-violet-wash 0.9s var(--ease-theme),
+    --color-slate-ink 0.9s var(--ease-theme),
+    --color-footer 0.9s var(--ease-theme),
+    --color-on-footer 0.9s var(--ease-theme);
+}
+@media (prefers-reduced-motion: reduce) {
+  html.theme-transition {
+    transition: none;
+  }
+}
+
+/* Theme segmented control: the thumb position comes from <html data-theme-pref>, so it is right
+   on first paint (no flash, no hydration mismatch). */
+.theme-thumb {
+  transform: translateX(200%);
+}
+html[data-theme-pref="light"] .theme-thumb {
+  transform: translateX(0);
+}
+html[data-theme-pref="dark"] .theme-thumb {
+  transform: translateX(100%);
+}
+html[data-theme-pref="system"] .theme-thumb {
+  transform: translateX(200%);
+}
+
+/* ------------------------------------------------------------------
+   Language switch
+   1. `lang-switching`: page content dims and softens while the server renders the new language.
+   2. `lang-entering`: sections rise back in one after another, labels cross-fade.
+------------------------------------------------------------------- */
+html.lang-switching #content {
+  opacity: 0.35;
+  filter: blur(3px);
+  transform: translateY(4px);
+  pointer-events: none;
+}
+.lang-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 100;
+  height: 2px;
+  background: var(--color-violet);
+  transform-origin: left;
+  animation: lang-progress 1.6s var(--ease-out-expo) forwards;
+}
+@keyframes lang-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(0.85); }
+}
+@keyframes lang-in {
+  from { opacity: 0; transform: translateY(12px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes swap-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: none; }
+}
+html.lang-entering #content .page-enter > * > * {
+  animation: lang-in 0.65s var(--ease-out-expo) backwards;
+}
+html.lang-entering #content .page-enter > * > :nth-child(2) { animation-delay: 70ms; }
+html.lang-entering #content .page-enter > * > :nth-child(3) { animation-delay: 140ms; }
+html.lang-entering #content .page-enter > * > :nth-child(4) { animation-delay: 210ms; }
+html.lang-entering #content .page-enter > * > :nth-child(5) { animation-delay: 280ms; }
+html.lang-entering #content .page-enter > * > :nth-child(6) { animation-delay: 350ms; }
+html.lang-entering #content .page-enter > * > :nth-child(n + 7) { animation-delay: 420ms; }
+html.lang-entering .t-swap {
+  animation: swap-in 0.55s var(--ease-out-expo) backwards;
+  animation-delay: var(--d, 0ms);
+}
+
+/* Browse filters: the panel only collapses once JavaScript is running, so without it every link is visible. */
+.js .filter-panel[data-open="false"] {
+  display: none;
+}
+.filter-panel[data-open="true"] {
+  transform-origin: top center;
+  animation: menu-in 0.25s var(--ease-out-expo) both;
+}
+.js .pill-group[data-expanded="false"] [data-extra] {
+  display: none;
+}
+.js-only {
+  display: none;
+}
+.js .js-only {
+  display: list-item;
+}
+
+/* Theme button for narrow screens: shows the icon of the saved preference (Light, Dark or System) with no flash. */
+.pref-icon {
+  display: none;
+}
+html[data-theme-pref="light"] .pref-icon-light,
+html[data-theme-pref="dark"] .pref-icon-dark,
+html:not([data-theme-pref="light"]):not([data-theme-pref="dark"]) .pref-icon-system {
+  display: block;
+}
+
+/* Trailer theatre: the dialog eases in over a blurred backdrop, and the page behind does not scroll. */
+@keyframes theatre-in {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+.trailer-dialog[open] {
+  animation: theatre-in 0.45s var(--ease-out-expo) both;
+}
+.trailer-dialog[open]::backdrop {
+  animation: fade-in 0.3s ease-out both;
+}
+html:has(.trailer-dialog[open]) {
+  overflow: hidden;
+}
+
+/* AI assistant panel: a bottom sheet on phones, a centred panel on larger screens. */
+@keyframes sheet-in {
+  from { opacity: 0; transform: translateY(32px); }
+  to { opacity: 1; transform: none; }
+}
+.ai-dialog[open] {
+  animation: sheet-in 0.4s var(--ease-out-expo) both;
+}
+.ai-dialog[open]::backdrop {
+  animation: fade-in 0.3s ease-out both;
+}
+html:has(.ai-dialog[open]) {
+  overflow: hidden;
+}
