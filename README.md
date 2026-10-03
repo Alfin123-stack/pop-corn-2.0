@@ -156,3 +156,4 @@ TMDB requires attribution: *This product uses the TMDB API but is not endorsed o
 
 Works on Vercel or any Node host. Set `TMDB_API_KEY`, `NEXT_PUBLIC_SITE_URL` (and optionally `TMDB_REGION`) in the environment **at build time** (pages are statically generated and refreshed on a schedule), then `npm run build && npm start`.
 # pop-corn-2.0
+# pop-corn-2.0
